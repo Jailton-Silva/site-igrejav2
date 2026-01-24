@@ -18,11 +18,185 @@ import {
     ChevronUp,
     ChevronDown,
 } from 'lucide-react';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { api } from '@/services/api';
 import { Banner } from '@/lib/database.types';
 import { uploadImage, generateBannerImagePath, getFileExtension } from '@/lib/supabase/storage';
 import toast from 'react-hot-toast';
 import { Upload, X as XIcon } from 'lucide-react';
+
+// Componente SortableItem para cada banner
+function SortableBannerItem({
+    banner,
+    index,
+    totalBanners,
+    onMoveUp,
+    onMoveDown,
+    onToggleActive,
+    onDuplicate,
+    onEdit,
+    onDelete,
+}: {
+    banner: Banner;
+    index: number;
+    totalBanners: number;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    onToggleActive: () => void;
+    onDuplicate: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: banner.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <motion.div
+            ref={setNodeRef}
+            style={style}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: isDragging ? 0.5 : 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className={`flex items-center gap-4 p-4 ${!banner.active ? 'opacity-60 bg-gray-50' : ''} ${isDragging ? 'z-50' : ''}`}
+        >
+            {/* Drag Handle */}
+            <button
+                {...attributes}
+                {...listeners}
+                className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-gray-600 transition-colors"
+                title="Arrastar para reordenar"
+            >
+                <GripVertical className="w-5 h-5" />
+            </button>
+
+            {/* Position */}
+            <span className="w-8 h-8 rounded-[10px] bg-[var(--color-accent)] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {index + 1}
+            </span>
+
+            {/* Thumbnail */}
+            <div className="relative w-32 h-20 rounded-[10px] overflow-hidden bg-gray-100 flex-shrink-0">
+                <Image
+                    src={banner.image_desktop_url}
+                    alt={banner.alt_text}
+                    fill
+                    className="object-cover"
+                />
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+                <p className="font-medium text-[var(--color-text)] truncate">
+                    {banner.alt_text}
+                </p>
+                <p className="text-sm text-[var(--color-text-muted)] truncate">
+                    {banner.link || 'Sem link'}
+                </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+                {/* Order Controls */}
+                <div className="flex flex-col gap-1 mr-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onMoveUp();
+                        }}
+                        disabled={index === 0}
+                        className={`p-1.5 rounded-[8px] transition-colors ${
+                            index === 0
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-blue-600 hover:bg-blue-50'
+                        }`}
+                        title="Mover para cima"
+                    >
+                        <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onMoveDown();
+                        }}
+                        disabled={index === totalBanners - 1}
+                        className={`p-1.5 rounded-[8px] transition-colors ${
+                            index === totalBanners - 1
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-blue-600 hover:bg-blue-50'
+                        }`}
+                        title="Mover para baixo"
+                    >
+                        <ChevronDown className="w-4 h-4" />
+                    </button>
+                </div>
+                <button
+                    onClick={onToggleActive}
+                    className={`p-2 rounded-[10px] transition-colors ${
+                        banner.active
+                            ? 'text-green-600 hover:bg-green-50'
+                            : 'text-gray-400 hover:bg-gray-100'
+                    }`}
+                    title={banner.active ? 'Desativar' : 'Ativar'}
+                >
+                    {banner.active ? (
+                        <Eye className="w-5 h-5" />
+                    ) : (
+                        <EyeOff className="w-5 h-5" />
+                    )}
+                </button>
+                <button
+                    onClick={onDuplicate}
+                    className="p-2 rounded-[10px] text-purple-600 hover:bg-purple-50 transition-colors"
+                    title="Duplicar"
+                >
+                    <Copy className="w-5 h-5" />
+                </button>
+                <button
+                    onClick={onEdit}
+                    className="p-2 rounded-[10px] text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Editar"
+                >
+                    <Pencil className="w-5 h-5" />
+                </button>
+                <button
+                    onClick={onDelete}
+                    className="p-2 rounded-[10px] text-red-600 hover:bg-red-50 transition-colors"
+                    title="Excluir"
+                >
+                    <Trash2 className="w-5 h-5" />
+                </button>
+            </div>
+        </motion.div>
+    );
+}
 
 export default function AdminBannersPage() {
     const [banners, setBanners] = useState<Banner[]>([]);
@@ -31,6 +205,14 @@ export default function AdminBannersPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [uploading, setUploading] = useState<string | null>(null);
+    const [isReordering, setIsReordering] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     // File states
     const [desktopFile, setDesktopFile] = useState<File | null>(null);
@@ -433,35 +615,84 @@ export default function AdminBannersPage() {
         if (direction === 'down' && index === banners.length - 1) return;
 
         const newIndex = direction === 'up' ? index - 1 : index + 1;
-        const currentBanner = banners[index];
-        const targetBanner = banners[newIndex];
-
-        // Trocar posições
-        const tempPosition = currentBanner.position;
-        const newCurrentPosition = targetBanner.position;
-        const newTargetPosition = tempPosition;
-
-        // Atualizar estado local (optimistic update)
-        const updatedBanners = [...banners];
-        updatedBanners[index] = { ...currentBanner, position: newCurrentPosition };
-        updatedBanners[newIndex] = { ...targetBanner, position: newTargetPosition };
         
-        // Reordenar pelo position
-        updatedBanners.sort((a, b) => a.position - b.position);
+        // Criar novo array com elementos trocados
+        const newBanners = [...banners];
+        const [movedBanner] = newBanners.splice(index, 1);
+        newBanners.splice(newIndex, 0, movedBanner);
+
+        // Atualizar posições numéricas
+        const updatedBanners = newBanners.map((banner, idx) => ({
+            ...banner,
+            position: idx + 1,
+        }));
+
+        // Atualizar estado imediatamente (optimistic update)
         setBanners(updatedBanners);
+        setIsReordering(true);
 
         try {
-            // Atualizar no banco de dados
-            await api.updateBannerPositions([
-                { id: currentBanner.id, position: newCurrentPosition },
-                { id: targetBanner.id, position: newTargetPosition },
-            ]);
+            // Preparar atualizações para o banco
+            const updates = updatedBanners.map((banner, idx) => ({
+                id: banner.id,
+                position: idx + 1,
+            }));
+
+            await api.updateBannerPositions(updates);
             toast.success('Ordem dos banners atualizada!');
         } catch (error) {
             console.error('Error updating banner positions:', error);
             toast.error('Erro ao atualizar ordem dos banners.');
             // Reverter mudanças
             loadBanners();
+        } finally {
+            setIsReordering(false);
+        }
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) {
+            return;
+        }
+
+        const oldIndex = banners.findIndex((banner) => banner.id === active.id);
+        const newIndex = banners.findIndex((banner) => banner.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) {
+            return;
+        }
+
+        // Reordenar array
+        const newBanners = arrayMove(banners, oldIndex, newIndex);
+
+        // Atualizar posições numéricas
+        const updatedBanners = newBanners.map((banner, idx) => ({
+            ...banner,
+            position: idx + 1,
+        }));
+
+        // Atualizar estado imediatamente
+        setBanners(updatedBanners);
+        setIsReordering(true);
+
+        try {
+            // Preparar atualizações para o banco
+            const updates = updatedBanners.map((banner, idx) => ({
+                id: banner.id,
+                position: idx + 1,
+            }));
+
+            await api.updateBannerPositions(updates);
+            toast.success('Ordem dos banners atualizada!');
+        } catch (error) {
+            console.error('Error updating banner positions:', error);
+            toast.error('Erro ao atualizar ordem dos banners.');
+            // Reverter mudanças
+            loadBanners();
+        } finally {
+            setIsReordering(false);
         }
     };
 
@@ -507,114 +738,33 @@ export default function AdminBannersPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="divide-y">
-                        {banners.map((banner, index) => (
-                            <motion.div
-                                key={banner.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`flex items-center gap-4 p-4 ${!banner.active ? 'opacity-60 bg-gray-50' : ''
-                                    }`}
-                            >
-                                {/* Drag Handle */}
-                                <button className="text-gray-400 cursor-grab hover:text-gray-600">
-                                    <GripVertical className="w-5 h-5" />
-                                </button>
-
-                                {/* Position */}
-                                <span className="w-8 h-8 rounded-[10px] bg-[var(--color-accent)] text-white flex items-center justify-center text-sm font-bold">
-                                    {index + 1}
-                                </span>
-
-                                {/* Thumbnail */}
-                                <div className="relative w-32 h-20 rounded-[10px] overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <Image
-                                        src={banner.image_desktop_url}
-                                        alt={banner.alt_text}
-                                        fill
-                                        className="object-cover"
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={banners.map((b) => b.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="divide-y">
+                                {banners.map((banner, index) => (
+                                    <SortableBannerItem
+                                        key={banner.id}
+                                        banner={banner}
+                                        index={index}
+                                        totalBanners={banners.length}
+                                        onMoveUp={() => moveBanner(index, 'up')}
+                                        onMoveDown={() => moveBanner(index, 'down')}
+                                        onToggleActive={() => toggleActive(banner.id, banner.active)}
+                                        onDuplicate={() => duplicateBanner(banner)}
+                                        onEdit={() => openModal(banner)}
+                                        onDelete={() => deleteBanner(banner.id)}
                                     />
-                                </div>
-
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-[var(--color-text)] truncate">
-                                        {banner.alt_text}
-                                    </p>
-                                    <p className="text-sm text-[var(--color-text-muted)] truncate">
-                                        {banner.link || 'Sem link'}
-                                    </p>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-2">
-                                    {/* Order Controls */}
-                                    <div className="flex flex-col gap-1 mr-2">
-                                        <button
-                                            onClick={() => moveBanner(index, 'up')}
-                                            disabled={index === 0}
-                                            className={`p-1.5 rounded-[8px] transition-colors ${
-                                                index === 0
-                                                    ? 'text-gray-300 cursor-not-allowed'
-                                                    : 'text-blue-600 hover:bg-blue-50'
-                                            }`}
-                                            title="Mover para cima"
-                                        >
-                                            <ChevronUp className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => moveBanner(index, 'down')}
-                                            disabled={index === banners.length - 1}
-                                            className={`p-1.5 rounded-[8px] transition-colors ${
-                                                index === banners.length - 1
-                                                    ? 'text-gray-300 cursor-not-allowed'
-                                                    : 'text-blue-600 hover:bg-blue-50'
-                                            }`}
-                                            title="Mover para baixo"
-                                        >
-                                            <ChevronDown className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                    <button
-                                        onClick={() => toggleActive(banner.id, banner.active)}
-                                        className={`p-2 rounded-[10px] transition-colors ${banner.active
-                                            ? 'text-green-600 hover:bg-green-50'
-                                            : 'text-gray-400 hover:bg-gray-100'
-                                            }`}
-                                        title={banner.active ? 'Desativar' : 'Ativar'}
-                                    >
-                                        {banner.active ? (
-                                            <Eye className="w-5 h-5" />
-                                        ) : (
-                                            <EyeOff className="w-5 h-5" />
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => duplicateBanner(banner)}
-                                        className="p-2 rounded-[10px] text-purple-600 hover:bg-purple-50 transition-colors"
-                                        title="Duplicar"
-                                    >
-                                        <Copy className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => openModal(banner)}
-                                        className="p-2 rounded-[10px] text-blue-600 hover:bg-blue-50 transition-colors"
-                                        title="Editar"
-                                    >
-                                        <Pencil className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => deleteBanner(banner.id)}
-                                        className="p-2 rounded-[10px] text-red-600 hover:bg-red-50 transition-colors"
-                                        title="Excluir"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
                 )}
             </div>
 
