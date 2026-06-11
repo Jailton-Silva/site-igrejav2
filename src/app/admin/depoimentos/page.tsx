@@ -16,6 +16,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminDepoimentosPage() {
     const { viewMode, setViewMode } = useAdminViewMode('depoimentos', 'grid');
@@ -132,6 +133,7 @@ export default function AdminDepoimentosPage() {
 
             await loadTestimonials();
             toast.success(editingTestimonial ? 'Depoimento atualizado com sucesso!' : 'Depoimento criado com sucesso!');
+            await triggerContentRevalidation();
             closeModal();
         } catch (error) {
             console.error('Error saving testimonial:', error);
@@ -149,6 +151,7 @@ export default function AdminDepoimentosPage() {
             setTestimonials((prev) => prev.filter((t) => t.id !== id)); // Optimistic
             await api.deleteTestimonial(id);
             toast.success('Depoimento excluído com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error deleting testimonial:', error);
             toast.error('Erro ao excluir depoimento.');

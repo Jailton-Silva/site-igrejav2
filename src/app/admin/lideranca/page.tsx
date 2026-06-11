@@ -24,6 +24,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 interface Leader {
     id: string;
@@ -163,6 +164,7 @@ export default function AdminLiderancaPage() {
             }
             await loadLeaders();
             toast.success(editingLeader ? 'Líder atualizado com sucesso!' : 'Líder criado com sucesso!');
+            await triggerContentRevalidation();
             closeModal();
         } catch (error) {
             console.error('Erro ao salvar líder:', error);
@@ -180,6 +182,7 @@ export default function AdminLiderancaPage() {
             await api.deleteLeader(id);
             await loadLeaders();
             toast.success('Líder excluído com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Erro ao excluir líder:', error);
             toast.error('Erro ao excluir líder. Tente novamente.');
@@ -192,6 +195,7 @@ export default function AdminLiderancaPage() {
         try {
             await api.updateLeaderOrders(toOrderUpdates(reordered, (l) => l.id));
             toast.success('Ordem atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Erro ao atualizar ordem:', error);
             setLeaders(previous);

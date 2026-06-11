@@ -14,6 +14,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 interface Event { id: string; title: string; day_of_week: string; time_start: string; time_end: string | null; description: string | null; type: 'culto' | 'estudo' | 'oracao' | 'ebd' | 'ensaio'; active: boolean; order: number; }
 
@@ -76,6 +77,7 @@ export default function AdminEventosPage() {
             }
             await loadEvents();
             toast.success(editingEvent ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!');
+            await triggerContentRevalidation();
             closeModal();
         } catch (error) {
             console.error('Erro ao salvar evento:', error);
@@ -92,6 +94,7 @@ export default function AdminEventosPage() {
             await api.deleteEvent(id);
             await loadEvents();
             toast.success('Evento excluído com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Erro ao excluir evento:', error);
             toast.error('Erro ao excluir evento. Tente novamente.');
@@ -104,6 +107,7 @@ export default function AdminEventosPage() {
         try {
             await api.updateEventOrders(toOrderUpdates(reordered, (e) => e.id));
             toast.success('Ordem atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Erro ao atualizar ordem:', error);
             setEvents(previous);

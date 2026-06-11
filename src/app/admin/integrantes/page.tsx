@@ -27,6 +27,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminIntegrantesPage() {
     const { viewMode, setViewMode } = useAdminViewMode('integrantes', 'list');
@@ -187,6 +188,7 @@ export default function AdminIntegrantesPage() {
             }
 
             await loadMembers();
+            await triggerContentRevalidation();
             closeModal();
         } catch (error: any) {
             console.error('Error saving member:', error);
@@ -202,6 +204,7 @@ export default function AdminIntegrantesPage() {
         try {
             await api.deleteDepartmentMember(id);
             toast.success('Integrante excluído com sucesso!');
+            await triggerContentRevalidation();
             await loadMembers();
         } catch (error: any) {
             console.error('Error deleting member:', error);
@@ -215,6 +218,7 @@ export default function AdminIntegrantesPage() {
         try {
             await api.updateDepartmentMemberOrders(toOrderUpdates(reordered, (m) => m.id));
             toast.success('Ordem atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error moving member:', error);
             setMembers(previous);

@@ -79,7 +79,7 @@ export default async function Home() {
         <VerseSection verse={verse} />
         <AboutSection leaders={leaders} />
         <KnowledgeSection posts={posts} />
-        <ScheduleSection events={events} />
+        <ScheduleSection events={events} googleCalendarEmbed={settings?.google_calendar_embed} />
         <GivingSection financials={financials} />
         <GallerySection items={galleryLinks} />
         <TestimonialsSection testimonials={testimonials} />

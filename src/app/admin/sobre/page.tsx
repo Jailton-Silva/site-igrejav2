@@ -10,6 +10,7 @@ import { AboutPageCover } from '@/lib/database.types';
 import { uploadAboutPageCover } from '@/lib/supabase/storage';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminSobrePage() {
     const [cover, setCover] = useState<AboutPageCover | null>(null);
@@ -170,6 +171,7 @@ export default function AdminSobrePage() {
             await loadCover();
             setCoverFile(null);
             setChurchImageFile(null);
+            await triggerContentRevalidation();
         } catch (error: any) {
             console.error('Error saving cover:', error);
             toast.error(`Erro ao salvar cover: ${error.message || 'Verifique os dados e tente novamente.'}`);

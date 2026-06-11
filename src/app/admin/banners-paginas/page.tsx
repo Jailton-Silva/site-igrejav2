@@ -9,6 +9,7 @@ import { api } from '@/services/api';
 import { PageBanner } from '@/lib/database.types';
 import { uploadAboutPageCover } from '@/lib/supabase/storage';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminBannersPaginasPage() {
     const [estudosBanner, setEstudosBanner] = useState<PageBanner | null>(null);
@@ -113,6 +114,10 @@ export default function AdminBannersPaginasPage() {
                 await api.createPageBanner(bannerData);
                 toast.success(`Banner da página ${type === 'estudos' ? 'Estudos' : 'Blog'} criado com sucesso!`);
             }
+
+            await triggerContentRevalidation({
+                type: type === 'estudos' ? 'study' : 'blog',
+            });
 
             await loadBanners();
             if (type === 'estudos') {

@@ -27,6 +27,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminDepartamentosPage() {
     const { viewMode, setViewMode } = useAdminViewMode('departamentos', 'list');
@@ -160,6 +161,7 @@ export default function AdminDepartamentosPage() {
             }
 
             await loadDepartments();
+            await triggerContentRevalidation();
             closeModal();
         } catch (error: any) {
             console.error('Error saving department:', error);
@@ -175,6 +177,7 @@ export default function AdminDepartamentosPage() {
         try {
             await api.deleteDepartment(id);
             toast.success('Departamento excluído com sucesso!');
+            await triggerContentRevalidation();
             await loadDepartments();
         } catch (error: any) {
             console.error('Error deleting department:', error);
@@ -188,6 +191,7 @@ export default function AdminDepartamentosPage() {
         try {
             await api.updateDepartmentOrders(toOrderUpdates(reordered, (d) => d.id));
             toast.success('Ordem atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error moving department:', error);
             setDepartments(previous);

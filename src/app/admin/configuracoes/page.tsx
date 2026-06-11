@@ -7,6 +7,7 @@ import { AdminPageHeader, AdminPanel } from '@/components/admin';
 import { api } from '@/services/api';
 import { SiteSettings } from '@/lib/database.types';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminConfiguracoesPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +21,7 @@ export default function AdminConfiguracoesPage() {
         email: '',
         instagram_url: '',
         instagram_handle: '',
+        google_maps_embed: '',
         google_calendar_embed: '',
     });
 
@@ -31,12 +33,13 @@ export default function AdminConfiguracoesPage() {
                 setFormData({
                     church_name: data.church_name || '',
                     church_address: data.church_address || '',
-                    church_city: '', // Not in database schema
+                    church_city: data.church_city || '',
                     church_cep: data.church_cep || '',
                     phone: data.phone || '',
                     email: data.email || '',
                     instagram_url: data.instagram_url || '',
                     instagram_handle: data.instagram_handle || '',
+                    google_maps_embed: data.google_maps_embed || '',
                     google_calendar_embed: data.google_calendar_embed || '',
                 });
             }
@@ -59,14 +62,17 @@ export default function AdminConfiguracoesPage() {
             await api.updateSettings({
                 church_name: formData.church_name,
                 church_address: formData.church_address,
+                church_city: formData.church_city,
                 church_cep: formData.church_cep,
                 phone: formData.phone,
                 email: formData.email,
                 instagram_url: formData.instagram_url,
                 instagram_handle: formData.instagram_handle,
-                google_calendar_embed: formData.google_calendar_embed,
+                google_maps_embed: formData.google_maps_embed || undefined,
+                google_calendar_embed: formData.google_calendar_embed || undefined,
             });
             toast.success('Configurações salvas com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error saving settings:', error);
             toast.error('Erro ao salvar configurações. Tente novamente.');
@@ -117,7 +123,18 @@ export default function AdminConfiguracoesPage() {
                     {/* Embed */}
                     <div>
                         <h2 className="admin-section-title mb-4 flex items-center gap-2"><Calendar className="w-5 h-5" /> Integrações</h2>
-                        <div><label className="admin-label mb-1">URL do Google Calendar Embed</label><input type="url" value={formData.google_calendar_embed} onChange={(e) => setFormData((p) => ({ ...p, google_calendar_embed: e.target.value }))} className="w-full px-4 py-2 rounded-[10px] border focus:border-[var(--color-accent)] outline-none" /></div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="admin-label mb-1">URL do Google Maps Embed</label>
+                                <input type="url" value={formData.google_maps_embed} onChange={(e) => setFormData((p) => ({ ...p, google_maps_embed: e.target.value }))} className="w-full px-4 py-2 rounded-[10px] border focus:border-[var(--color-accent)] outline-none" placeholder="https://www.google.com/maps/embed?..." />
+                                <p className="admin-help mt-1">Exibido na seção de contato da página inicial.</p>
+                            </div>
+                            <div>
+                                <label className="admin-label mb-1">URL do Google Calendar Embed</label>
+                                <input type="url" value={formData.google_calendar_embed} onChange={(e) => setFormData((p) => ({ ...p, google_calendar_embed: e.target.value }))} className="w-full px-4 py-2 rounded-[10px] border focus:border-[var(--color-accent)] outline-none" placeholder="https://calendar.google.com/calendar/embed?..." />
+                                <p className="admin-help mt-1">Exibido na seção de agenda da página inicial.</p>
+                            </div>
+                        </div>
                     </div>
 
                         <button type="submit" disabled={isSaving} className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] text-white rounded-[30px] hover:bg-[var(--color-accent-light)] disabled:opacity-70">{isSaving ? <><Loader2 className="w-5 h-5 animate-spin" />Salvando...</> : <><Save className="w-5 h-5" />Salvar Configurações</>}</button>

@@ -17,9 +17,13 @@ import SectionHeader from '@/components/ui/SectionHeader';
 
 interface ScheduleSectionProps {
     events: DBEvent[];
+    googleCalendarEmbed?: string | null;
 }
 
-export default function ScheduleSection({ events = [] }: ScheduleSectionProps) {
+const DEFAULT_CALENDAR_EMBED =
+    'https://calendar.google.com/calendar/embed?height=400&wkst=1&ctz=America%2FSao_Paulo&showPrint=0&mode=WEEK&hl=pt_BR&showCalendars=0&showTitle=0&title=Cronograma%20ADDMS&src=YXNzZW1ibGVpYWRlZGV1c3NhY3JhMjBAZ21haWwuY29t&color=%23232d82';
+
+export default function ScheduleSection({ events = [], googleCalendarEmbed }: ScheduleSectionProps) {
     // If no events provided, maybe fall back to empty or hardcoded?
     // Let's assume passed events or empty array.
 
@@ -27,8 +31,7 @@ export default function ScheduleSection({ events = [] }: ScheduleSectionProps) {
     // Ideally we order by day of week but that's complex since it's string.
     // Let's trust the input order or simple map.
 
-    const googleCalendarUrl =
-        'https://calendar.google.com/calendar/embed?height=400&wkst=1&ctz=America%2FSao_Paulo&showPrint=0&mode=WEEK&hl=pt_BR&showCalendars=0&showTitle=0&title=Cronograma%20ADDMS&src=YXNzZW1ibGVpYWRlZGV1c3NhY3JhMjBAZ21haWwuY29t&color=%23232d82';
+    const googleCalendarUrl = googleCalendarEmbed?.trim() || DEFAULT_CALENDAR_EMBED;
 
     const eventTypeConfig = {
         culto: {

@@ -1,5 +1,5 @@
 /**
- * Verifica conexão com o Supabase usando variáveis do .env.local
+ * Verifica conexão e estrutura mínima do Supabase usando .env.local
  * Uso: node scripts/verify-supabase.mjs
  */
 import { readFileSync } from 'fs';
@@ -28,27 +28,83 @@ if (!url || !key) {
   process.exit(1);
 }
 
-const tables = ['banners', 'verses', 'posts', 'site_settings', 'page_views'];
+const headers = {
+  apikey: key,
+  Authorization: `Bearer ${key}`,
+};
+
+const tables = [
+  'banners',
+  'verses',
+  'posts',
+  'post_relations',
+  'site_settings',
+  'page_views',
+  'events',
+  'page_banners',
+  'about_page_cover',
+  'departments',
+  'department_members',
+];
+
+/** Colunas críticas por tabela (select=id,col) */
+const columnChecks = [
+  { table: 'site_settings', column: 'hero_autoplay_seconds' },
+  { table: 'site_settings', column: 'google_maps_embed' },
+  { table: 'events', column: 'order' },
+  { table: 'posts', column: 'slug' },
+  { table: 'banners', column: 'overlay_opacity' },
+];
 
 console.log('Verificando Supabase:', url);
 
 let hasError = false;
 
 for (const table of tables) {
-  const res = await fetch(`${url}/rest/v1/${table}?select=id&limit=1`, {
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-    },
-  });
+  const res = await fetch(`${url}/rest/v1/${table}?select=id&limit=1`, { headers });
 
   if (res.ok) {
-    console.log(`✅ ${table}`);
+    console.log(`✅ tabela ${table}`);
   } else {
     const body = await res.text();
-    console.error(`❌ ${table} — HTTP ${res.status}: ${body.slice(0, 120)}`);
+    console.error(`❌ tabela ${table} — HTTP ${res.status}: ${body.slice(0, 120)}`);
     hasError = true;
   }
 }
 
-process.exit(hasError ? 1 : 0);
+for (const { table, column } of columnChecks) {
+  const res = await fetch(`${url}/rest/v1/${table}?select=${column}&limit=1`, { headers });
+
+  if (res.ok) {
+    console.log(`✅ coluna ${table}.${column}`);
+  } else {
+    const body = await res.text();
+    console.error(`❌ coluna ${table}.${column} — HTTP ${res.status}: ${body.slice(0, 120)}`);
+    hasError = true;
+  }
+}
+
+const rpcChecks = ['get_page_view_stats', 'get_daily_page_views'];
+for (const fn of rpcChecks) {
+  const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify({ days_back: 1 }),
+  });
+
+  if (res.ok || res.status === 200) {
+    console.log(`✅ função ${fn}`);
+  } else {
+    const body = await res.text();
+    console.error(`❌ função ${fn} — HTTP ${res.status}: ${body.slice(0, 120)}`);
+    hasError = true;
+  }
+}
+
+if (hasError) {
+  console.log('\n💡 Execute as migrações em supabase/ ou o schema.sql consolidado no SQL Editor.');
+  process.exit(1);
+}
+
+console.log('\n✅ Supabase OK — estrutura mínima verificada.');
+process.exit(0);

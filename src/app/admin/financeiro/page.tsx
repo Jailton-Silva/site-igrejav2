@@ -9,6 +9,7 @@ import { api } from '@/services/api';
 import { Financial } from '@/lib/database.types';
 import { uploadQRCode } from '@/lib/supabase/storage';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminFinanceiroPage() {
     const [pixKey, setPixKey] = useState('');
@@ -91,6 +92,7 @@ export default function AdminFinanceiroPage() {
                 active: true,
             });
             toast.success('Configurações salvas com sucesso!');
+            await triggerContentRevalidation();
             setQrcodeFile(null);
         } catch (error) {
             console.error('Error saving financials:', error);

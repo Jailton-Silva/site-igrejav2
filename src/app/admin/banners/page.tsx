@@ -41,6 +41,7 @@ import { uploadImage, generateBannerImagePath, getFileExtension } from '@/lib/su
 import { AdminPageHeader, AdminListToolbar, useAdminViewMode } from '@/components/admin';
 import type { AdminViewMode } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 import { Upload, X as XIcon } from 'lucide-react';
 
 // Componente SortableItem para cada banner
@@ -507,6 +508,7 @@ export default function AdminBannersPage() {
 
             await loadBanners();
             toast.success(editingBanner ? 'Banner atualizado com sucesso!' : 'Banner criado com sucesso!');
+            await triggerContentRevalidation();
             closeModal();
         } catch (error: any) {
             console.error('Error saving banner:', error);
@@ -575,6 +577,7 @@ export default function AdminBannersPage() {
             setBanners((prev) => prev.filter((b) => b.id !== id)); // Optimistic
             await api.deleteBanner(id);
             toast.success('Banner excluído com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error deleting banner:', error);
             toast.error('Erro ao excluir banner.');
@@ -661,6 +664,7 @@ export default function AdminBannersPage() {
 
             await api.updateBannerPositions(updates);
             toast.success('Ordem dos banners atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error updating banner positions:', error);
             toast.error('Erro ao atualizar ordem dos banners.');
@@ -678,6 +682,7 @@ export default function AdminBannersPage() {
         try {
             await api.updateSettings({ hero_autoplay_seconds: seconds });
             toast.success(`Slides exibidos por ${seconds} segundos cada.`);
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error saving carousel settings:', error);
             toast.error('Erro ao salvar. Execute supabase/migration_hero_autoplay.sql no Supabase.');

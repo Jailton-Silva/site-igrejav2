@@ -18,6 +18,7 @@ import {
     useAdminViewMode,
 } from '@/components/admin';
 import toast from 'react-hot-toast';
+import { triggerContentRevalidation } from '@/lib/admin/triggerRevalidation';
 
 export default function AdminGaleriaPage() {
     const { viewMode, setViewMode } = useAdminViewMode('galeria', 'list');
@@ -130,6 +131,7 @@ export default function AdminGaleriaPage() {
 
             await loadLinks();
             toast.success(editingLink ? 'Álbum atualizado com sucesso!' : 'Álbum criado com sucesso!');
+            await triggerContentRevalidation();
             closeModal();
         } catch (error) {
             console.error('Error saving gallery link:', error);
@@ -147,6 +149,7 @@ export default function AdminGaleriaPage() {
             setLinks((prev) => prev.filter((l) => l.id !== id)); // Optimistic
             await api.deleteGalleryLink(id);
             toast.success('Álbum excluído com sucesso!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error deleting gallery link:', error);
             toast.error('Erro ao excluir álbum.');
@@ -160,6 +163,7 @@ export default function AdminGaleriaPage() {
         try {
             await api.updateGalleryLinkOrders(toOrderUpdates(reordered, (l) => l.id));
             toast.success('Ordem atualizada!');
+            await triggerContentRevalidation();
         } catch (error) {
             console.error('Error updating gallery order:', error);
             setLinks(previous);
