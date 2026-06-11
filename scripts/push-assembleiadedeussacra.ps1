@@ -13,21 +13,29 @@ if (Test-Path "C:\Program Files\Git\mingw64\bin\git-credential-manager.exe") {
 $Repo = "assembleiadedeussacra/site-igrejav2"
 $RemoteUrl = "https://github.com/$Repo.git"
 
-Write-Host "Configurando remote..." -ForegroundColor Cyan
-git remote set-url origin $RemoteUrl
-
-Write-Host "Remote atual:" -ForegroundColor Cyan
-git remote -v
-
-$ahead = git rev-list --count origin/main..HEAD 2>$null
+Write-Host "Configurando remote upstream (repo oficial)..." -ForegroundColor Cyan
+git remote get-url upstream 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Buscando origin..." -ForegroundColor Yellow
-    git fetch origin
-    $ahead = git rev-list --count origin/main..HEAD
+    git remote add upstream $RemoteUrl
+} else {
+    git remote set-url upstream $RemoteUrl
 }
 
-Write-Host "`nCommits locais a enviar: $ahead" -ForegroundColor Cyan
-git log origin/main..HEAD --oneline
+Write-Host "Remotes:" -ForegroundColor Cyan
+git remote -v
+
+Write-Host "Buscando upstream..." -ForegroundColor Yellow
+git fetch upstream
+
+$ahead = git rev-list --count upstream/main..HEAD 2>$null
+if ($LASTEXITCODE -ne 0) { $ahead = 0 }
+
+Write-Host "`nCommits locais a enviar para assembleiadedeussacra: $ahead" -ForegroundColor Cyan
+if ($ahead -gt 0) {
+    git log upstream/main..HEAD --oneline
+} else {
+    Write-Host "(nenhum — local ja esta igual ao repo oficial)" -ForegroundColor Yellow
+}
 
 Write-Host "`nRemovendo login GitHub da conta Jailton-Silva..." -ForegroundColor Yellow
 & $Gcm github logout Jailton-Silva 2>$null
@@ -37,7 +45,10 @@ Write-Host "`nRemovendo login GitHub da conta Jailton-Silva..." -ForegroundColor
 if ($env:GITHUB_TOKEN) {
     Write-Host "`nUsando GITHUB_TOKEN para push como assembleiadedeussacra..." -ForegroundColor Green
     git -c credential.helper= push "https://assembleiadedeussacra:$($env:GITHUB_TOKEN)@github.com/$Repo.git" HEAD:main
-    git branch --set-upstream-to=origin/main main 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        git push fork main 2>$null
+        Write-Host "Fork Jailton-Silva tambem atualizado." -ForegroundColor Green
+    }
 } else {
     Write-Host @"
 
@@ -53,6 +64,9 @@ Use token da conta assembleiadedeussacra:
 
      `$env:GITHUB_TOKEN='ghp_SEU_TOKEN'
      .\scripts\push-assembleiadedeussacra.ps1
+
+Alternativa sem token — abrir Pull Request do fork:
+  https://github.com/assembleiadedeussacra/site-igrejav2/compare/main...Jailton-Silva:site-igrejav2:main
 
 "@ -ForegroundColor Yellow
     exit 1
