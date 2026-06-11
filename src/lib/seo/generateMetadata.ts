@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import type { Post } from '@/lib/database.types';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app';
-const SITE_NAME = 'Assembleia de Deus Missão - Sacramento/MG';
+import { SITE_URL, SITE_NAME, OG_IMAGE } from './constants';
 
 /**
  * Generates optimized metadata for a post
@@ -30,7 +28,7 @@ export function generatePostMetadata(
     const canonicalUrl = post.canonical_url || `${SITE_URL}/${type === 'study' ? 'estudos' : 'blog'}/${post.slug || post.id}`;
     
     // Open Graph image
-    const ogImage = post.og_image || post.cover_image || `${SITE_URL}/images/og-image.jpg`;
+    const ogImage = post.og_image || post.cover_image || `${SITE_URL}${OG_IMAGE}`;
     
     // Open Graph title and description
     const ogTitle = post.og_title || optimizedTitle;

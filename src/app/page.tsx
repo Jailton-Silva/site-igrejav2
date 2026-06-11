@@ -11,7 +11,9 @@ import {
   TestimonialsSection,
   ContactSection,
 } from '@/components';
+import JsonLd from '@/components/seo/JsonLd';
 import { serverApi } from '@/services/server';
+import { generateEventsSchema } from '@/lib/seo/schema';
 import type {
   Banner,
   Verse,
@@ -63,8 +65,11 @@ export default async function Home() {
     console.error('Error loading page data:', error);
   }
 
+  const eventsSchema = generateEventsSchema(events, settings);
+
   return (
     <>
+      {eventsSchema.length > 0 && <JsonLd data={eventsSchema} />}
       <Header settings={settings} />
       <main>
         <HeroSection banners={banners} />

@@ -5,6 +5,7 @@ import {
 } from '@/components';
 import AboutPageSection from '@/components/sections/AboutPageSection';
 import { serverApi } from '@/services/server';
+import { generatePageMetadata } from '@/lib/seo/pageMetadata';
 import type {
   SiteSettings,
   AboutPageCover,
@@ -12,6 +13,19 @@ import type {
   DepartmentMember,
   Leader,
 } from '@/lib/database.types';
+
+export const metadata = generatePageMetadata({
+  title: 'Sobre Nós',
+  description:
+    'Conheça a história, departamentos e liderança da Assembleia de Deus Missão em Sacramento/MG.',
+  path: '/sobre-nos',
+  keywords: [
+    'sobre a igreja',
+    'departamentos',
+    'liderança',
+    'Assembleia de Deus Sacramento',
+  ],
+});
 
 export default async function SobreNosPage() {
   let cover: AboutPageCover | null = null;

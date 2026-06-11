@@ -8,6 +8,8 @@ import { serverApi } from '@/services/server';
 import { generatePostMetadata } from '@/lib/seo/generateMetadata';
 import { generateArticleSchema } from '@/lib/seo/schema';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import JsonLd from '@/components/seo/JsonLd';
+import ServerContent from '@/components/content/ServerContent';
 import RelatedPosts from '@/components/posts/RelatedPosts';
 import type { Post, SiteSettings } from '@/lib/database.types';
 import { Calendar, Tag, ArrowLeft, Eye } from 'lucide-react';
@@ -96,28 +98,9 @@ export default async function EstudoPostPage({ params }: EstudoPostPageProps) {
         { label: post.title, href: `/estudos/${post.slug || post.id}` },
     ];
 
-    // Enhanced Schema with BreadcrumbList
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: breadcrumbItems.map((item, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: item.label,
-            item: item.href.startsWith('http') ? item.href : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app'}${item.href}`,
-        })),
-    };
-
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-            />
+            <JsonLd data={schema} />
             <Header settings={settings} />
                 <PostViewTracker post={post} />
             <main className="pt-24">
@@ -131,6 +114,7 @@ export default async function EstudoPostPage({ params }: EstudoPostPageProps) {
                                 fill
                                 className="object-cover"
                                 priority
+                                sizes="100vw"
                             />
                             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
                         </div>
@@ -193,10 +177,7 @@ export default async function EstudoPostPage({ params }: EstudoPostPageProps) {
 
                             {/* Content */}
                             <div className="prose prose-lg max-w-none bg-white rounded-[10px] p-8 md:p-12 shadow-sm">
-                                <div
-                                    dangerouslySetInnerHTML={{ __html: post.content }}
-                                    className="text-[var(--color-text-secondary)] leading-relaxed"
-                                />
+                                <ServerContent content={post.content} />
                             </div>
 
                             {/* Related Posts */}

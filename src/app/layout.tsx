@@ -6,6 +6,8 @@ import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import PerformanceMonitor from '@/components/analytics/PerformanceMonitor';
 import PageViewTracker from '@/components/analytics/PageViewTracker';
 import PwaServiceWorker from '@/components/pwa/ServiceWorkerRegistration';
+import ChurchStructuredData from '@/components/seo/ChurchStructuredData';
+import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION, OG_IMAGE } from '@/lib/seo/constants';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -14,14 +16,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'AD Missão Sacramento - Assembleia de Deus Sacramento/MG',
-    template: '%s | AD Missão Sacramento',
+    default: `${SITE_NAME} - Assembleia de Deus Sacramento/MG`,
+    template: `%s | ${SITE_NAME}`,
   },
-  applicationName: 'AD Missão Sacramento',
-  description:
-    'Website oficial da Igreja Assembleia de Deus Missão de Sacramento MG. Encontre informações sobre cultos, eventos, departamentos e mais. Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo.',
+  applicationName: SITE_NAME,
+  description: DEFAULT_DESCRIPTION,
   keywords: [
     'Assembleia de Deus',
     'Missão',
@@ -50,14 +51,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app',
-    siteName: 'AD Missão Sacramento',
-    title: 'AD Missão Sacramento - Assembleia de Deus Sacramento/MG',
-    description:
-      'Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo. Venha nos conhecer!',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} - Assembleia de Deus Sacramento/MG`,
+    description: 'Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo. Venha nos conhecer!',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: OG_IMAGE,
         width: 1200,
         height: 630,
         alt: 'Assembleia de Deus Missão - Sacramento/MG',
@@ -66,16 +66,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AD Missão Sacramento - Assembleia de Deus Sacramento/MG',
-    description:
-      'Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo.',
-    images: ['/images/og-image.jpg'],
+    title: `${SITE_NAME} - Assembleia de Deus Sacramento/MG`,
+    description: 'Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo.',
+    images: [OG_IMAGE],
   },
-  verification: {
-    // google: 'your-google-verification-code',
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app',
+    canonical: SITE_URL,
   },
   category: 'religion',
   icons: {
@@ -109,58 +108,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="AD Sacramento" />
         <meta name="application-name" content="AD Missão Sacramento" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Church',
-              name: 'Assembleia de Deus Missão de Sacramento MG',
-              description:
-                'Uma comunidade de fé dedicada a adorar a Deus e servir ao próximo.',
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: 'Rua Carlos R da Cunha n° 90',
-                addressLocality: 'Sacramento',
-                addressRegion: 'MG',
-                postalCode: '38190-000',
-                addressCountry: 'BR',
-              },
-              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app',
-              logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app'}/images/logo-igreja.png`,
-              sameAs: ['https://www.instagram.com/assembleiasacramento/'],
-              telephone: '+55-34-98432-7019',
-              openingHoursSpecification: [
-                {
-                  '@type': 'OpeningHoursSpecification',
-                  dayOfWeek: 'Tuesday',
-                  opens: '19:30',
-                  closes: '21:00',
-                },
-                {
-                  '@type': 'OpeningHoursSpecification',
-                  dayOfWeek: 'Thursday',
-                  opens: '19:30',
-                  closes: '21:00',
-                },
-                {
-                  '@type': 'OpeningHoursSpecification',
-                  dayOfWeek: 'Sunday',
-                  opens: '09:00',
-                  closes: '10:30',
-                },
-                {
-                  '@type': 'OpeningHoursSpecification',
-                  dayOfWeek: 'Sunday',
-                  opens: '19:00',
-                  closes: '21:00',
-                },
-              ],
-            }),
-          }}
-        />
       </head>
       <body className="antialiased">
+        <ChurchStructuredData />
         {children}
         <Toaster />
         <GoogleAnalytics />

@@ -1,29 +1,28 @@
 import { MetadataRoute } from 'next';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app';
+import { SITE_URL } from '@/lib/seo/constants';
 
 export default function robots(): MetadataRoute.Robots {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction =
+        process.env.VERCEL_ENV === 'production' ||
+        (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV);
+
+    if (!isProduction) {
+        return {
+            rules: { userAgent: '*', disallow: '/' },
+        };
+    }
 
     return {
         rules: [
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: [
-                    '/admin/',
-                    '/api/',
-                    '/_next/',
-                    '/static/',
-                ],
+                disallow: ['/admin/', '/api/', '/_next/', '/static/'],
             },
             {
                 userAgent: 'Googlebot',
                 allow: '/',
-                disallow: [
-                    '/admin/',
-                    '/api/',
-                ],
+                disallow: ['/admin/', '/api/'],
             },
         ],
         sitemap: `${SITE_URL}/sitemap.xml`,

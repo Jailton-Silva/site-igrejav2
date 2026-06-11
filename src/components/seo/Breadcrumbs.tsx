@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 
 interface BreadcrumbItem {
     label: string;
@@ -19,17 +20,7 @@ interface BreadcrumbsProps {
 export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
     if (!items || items.length === 0) return null;
 
-    // Generate Schema.org BreadcrumbList
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: items.map((item, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: item.label,
-            item: item.href.startsWith('http') ? item.href : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app'}${item.href}`,
-        })),
-    };
+    const breadcrumbSchema = generateBreadcrumbSchema(items);
 
     return (
         <>

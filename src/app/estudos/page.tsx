@@ -1,14 +1,16 @@
-import type { Metadata } from 'next';
 import { Header, Footer } from '@/components';
 import PostsPageContent from '@/components/posts/PostsPageContent';
 import { serverApi } from '@/services/server';
+import { generatePageMetadata } from '@/lib/seo/pageMetadata';
 import type { Post, PageBanner } from '@/lib/database.types';
 
-export const metadata: Metadata = {
+export const metadata = generatePageMetadata({
     title: 'Estudos e Reflexões',
     description:
-        'Estudos bíblicos e reflexões para fortalecer sua fé. Aprofunde seu conhecimento da Palavra de Deus.',
-};
+        'Estudos bíblicos e reflexões para fortalecer sua fé na Assembleia de Deus Missão de Sacramento/MG.',
+    path: '/estudos',
+    keywords: ['estudos bíblicos', 'reflexões cristãs', 'Sacramento MG', 'Palavra de Deus'],
+});
 
 export default async function EstudosPage() {
     let posts: Post[] = [];

@@ -1,14 +1,16 @@
-import type { Metadata } from 'next';
 import { Header, Footer } from '@/components';
 import PostsPageContent from '@/components/posts/PostsPageContent';
 import { serverApi } from '@/services/server';
+import { generatePageMetadata } from '@/lib/seo/pageMetadata';
 import type { Post, PageBanner } from '@/lib/database.types';
 
-export const metadata: Metadata = {
+export const metadata = generatePageMetadata({
     title: 'Blog',
     description:
-        'Notícias, eventos e artigos sobre a vida da nossa comunidade cristã.',
-};
+        'Notícias, eventos e artigos sobre a vida da comunidade da Assembleia de Deus Missão em Sacramento/MG.',
+    path: '/blog',
+    keywords: ['blog igreja', 'notícias evangélicas', 'Sacramento MG', 'Assembleia de Deus'],
+});
 
 export default async function BlogPage() {
     let posts: Post[] = [];

@@ -8,6 +8,8 @@ import { serverApi } from '@/services/server';
 import { generatePostMetadata } from '@/lib/seo/generateMetadata';
 import { generateArticleSchema } from '@/lib/seo/schema';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import JsonLd from '@/components/seo/JsonLd';
+import ServerContent from '@/components/content/ServerContent';
 import RelatedPosts from '@/components/posts/RelatedPosts';
 import type { Post, SiteSettings } from '@/lib/database.types';
 import { Calendar, Tag, ArrowLeft, Eye } from 'lucide-react';
@@ -96,28 +98,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         { label: post.title, href: `/blog/${post.slug || post.id}` },
     ];
 
-    // Enhanced Schema with BreadcrumbList
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: breadcrumbItems.map((item, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: item.label,
-            item: item.href.startsWith('http') ? item.href : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://assembleiasacramento.vercel.app'}${item.href}`,
-        })),
-    };
-
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-            />
+            <JsonLd data={schema} />
             <Header settings={settings} />
                 <PostViewTracker post={post} />
             <main className="pt-24">
@@ -194,10 +177,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                             {/* Content */}
                             <div className="prose prose-lg max-w-none bg-white rounded-[10px] p-8 md:p-12 shadow-sm">
-                                <div
-                                    dangerouslySetInnerHTML={{ __html: post.content }}
-                                    className="text-[var(--color-text-secondary)] leading-relaxed"
-                                />
+                                <ServerContent content={post.content} />
                             </div>
 
                             {/* Related Posts */}
