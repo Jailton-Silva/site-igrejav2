@@ -46,8 +46,8 @@ export default function Footer({ settings }: FooterProps) {
         {
             icon: Mail,
             label: 'E-mail',
-            value: settings?.email || 'contato@assembleiasacramento.com.br',
-            href: settings?.email ? `mailto:${settings.email}` : 'mailto:contato@assembleiasacramento.com.br',
+            value: settings?.email || 'assembleiadedeussacra20@gmail.com',
+            href: settings?.email ? `mailto:${settings.email}` : 'mailto:assembleiadedeussacra20@gmail.com',
         },
     ];
 

@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
   church_city TEXT NOT NULL DEFAULT 'Sacramento - MG',
   church_cep TEXT NOT NULL DEFAULT '38190-000',
   phone TEXT NOT NULL DEFAULT '34984327019',
-  email TEXT NOT NULL DEFAULT 'contato@assembleiasacramento.com.br',
+  email TEXT NOT NULL DEFAULT 'assembleiadedeussacra20@gmail.com',
   instagram_url TEXT DEFAULT 'https://www.instagram.com/assembleiasacramento/',
   instagram_handle TEXT DEFAULT '@assembleiasacramento',
   google_maps_embed TEXT,
@@ -189,7 +189,7 @@ VALUES (
   'Sacramento - MG',
   '38190-000',
   '34984327019',
-  'contato@assembleiasacramento.com.br',
+  'assembleiadedeussacra20@gmail.com',
   'https://www.instagram.com/assembleiasacramento/',
   '@assembleiasacramento'
 );

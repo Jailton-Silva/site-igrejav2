@@ -250,70 +250,105 @@ export interface DailyPageViews {
     unique_views: number;
 }
 
+type TableDef<Row, Insert, Update> = {
+    Row: Row & Record<string, unknown>;
+    Insert: Insert & Record<string, unknown>;
+    Update: Update & Record<string, unknown>;
+    Relationships: [];
+};
+
 // Database schema type
-export interface Database {
+export type Database = {
     public: {
         Tables: {
-            banners: {
-                Row: Banner;
-                Insert: Omit<Banner, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Banner, 'id' | 'created_at'>>;
+            banners: TableDef<
+                Banner,
+                Omit<Banner, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Banner, 'id' | 'created_at'>>
+            >;
+            verses: TableDef<
+                Verse,
+                Omit<Verse, 'id' | 'created_at'>,
+                Partial<Omit<Verse, 'id' | 'created_at'>>
+            >;
+            leaders: TableDef<
+                Leader,
+                Omit<Leader, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Leader, 'id' | 'created_at'>>
+            >;
+            posts: TableDef<
+                Post,
+                Omit<Post, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Post, 'id' | 'created_at'>>
+            >;
+            events: TableDef<
+                Event,
+                Omit<Event, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Event, 'id' | 'created_at'>>
+            >;
+            gallery_links: TableDef<
+                GalleryLink,
+                Omit<GalleryLink, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<GalleryLink, 'id' | 'created_at'>>
+            >;
+            financials: TableDef<
+                Financial,
+                Omit<Financial, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Financial, 'id' | 'created_at'>>
+            >;
+            testimonials: TableDef<
+                Testimonial,
+                Omit<Testimonial, 'id' | 'created_at'>,
+                Partial<Omit<Testimonial, 'id' | 'created_at'>>
+            >;
+            site_settings: TableDef<
+                SiteSettings,
+                Omit<SiteSettings, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<SiteSettings, 'id' | 'created_at'>>
+            >;
+            about_page_cover: TableDef<
+                AboutPageCover,
+                Omit<AboutPageCover, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<AboutPageCover, 'id' | 'created_at'>>
+            >;
+            departments: TableDef<
+                Department,
+                Omit<Department, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<Department, 'id' | 'created_at'>>
+            >;
+            department_members: TableDef<
+                DepartmentMember,
+                Omit<DepartmentMember, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<DepartmentMember, 'id' | 'created_at'>>
+            >;
+            page_views: TableDef<
+                PageView,
+                Omit<PageView, 'id' | 'created_at'>,
+                Partial<Omit<PageView, 'id' | 'created_at'>>
+            >;
+            page_banners: TableDef<
+                PageBanner,
+                Omit<PageBanner, 'id' | 'created_at' | 'updated_at'>,
+                Partial<Omit<PageBanner, 'id' | 'created_at'>>
+            >;
+            post_relations: TableDef<
+                PostRelation,
+                Omit<PostRelation, 'id' | 'created_at'>,
+                Partial<Omit<PostRelation, 'id' | 'created_at'>>
+            >;
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            get_page_view_stats: {
+                Args: { days_back?: number };
+                Returns: PageViewStats[];
             };
-            verses: {
-                Row: Verse;
-                Insert: Omit<Verse, 'id' | 'created_at'>;
-                Update: Partial<Omit<Verse, 'id' | 'created_at'>>;
-            };
-            leaders: {
-                Row: Leader;
-                Insert: Omit<Leader, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Leader, 'id' | 'created_at'>>;
-            };
-            posts: {
-                Row: Post;
-                Insert: Omit<Post, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Post, 'id' | 'created_at'>>;
-            };
-            events: {
-                Row: Event;
-                Insert: Omit<Event, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Event, 'id' | 'created_at'>>;
-            };
-            gallery_links: {
-                Row: GalleryLink;
-                Insert: Omit<GalleryLink, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<GalleryLink, 'id' | 'created_at'>>;
-            };
-            financials: {
-                Row: Financial;
-                Insert: Omit<Financial, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Financial, 'id' | 'created_at'>>;
-            };
-            testimonials: {
-                Row: Testimonial;
-                Insert: Omit<Testimonial, 'id' | 'created_at'>;
-                Update: Partial<Omit<Testimonial, 'id' | 'created_at'>>;
-            };
-            site_settings: {
-                Row: SiteSettings;
-                Insert: Omit<SiteSettings, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<SiteSettings, 'id' | 'created_at'>>;
-            };
-            about_page_cover: {
-                Row: AboutPageCover;
-                Insert: Omit<AboutPageCover, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<AboutPageCover, 'id' | 'created_at'>>;
-            };
-            departments: {
-                Row: Department;
-                Insert: Omit<Department, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<Department, 'id' | 'created_at'>>;
-            };
-            department_members: {
-                Row: DepartmentMember;
-                Insert: Omit<DepartmentMember, 'id' | 'created_at' | 'updated_at'>;
-                Update: Partial<Omit<DepartmentMember, 'id' | 'created_at'>>;
+            get_daily_page_views: {
+                Args: { days_back?: number };
+                Returns: DailyPageViews[];
             };
         };
     };
-}
+};

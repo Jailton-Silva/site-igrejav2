@@ -23,14 +23,14 @@ export async function POST(request: NextRequest) {
         // Insert page view
         const { error } = await supabase
             .from('page_views')
-            .insert({
+            .insert([{
                 page_path,
                 page_title: page_title || null,
                 referrer: referrer || null,
                 user_agent: user_agent || null,
                 ip_address,
                 session_id: session_id || null,
-            });
+            }]);
 
         if (error) {
             console.error('Error inserting page view:', error);
